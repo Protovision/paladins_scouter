@@ -36,11 +36,12 @@ size_t string_write(char *ptr,
 			size_t nmemb, 
 			void *string)
 {
-	size_t len;
+	size_t slen, tlen;
 
-	len = strlen((char*)string);
-	memcpy((char*)string + len, ptr, size * nmemb);
-	return size * nmemb;
+	slen = strlen((char*)string);
+	tlen = size * nmemb;
+	memcpy((char*)string + slen, ptr, tlen);
+	return tlen;
 }
 
 int fetch_paladins_player_online_status(CURL *curl, const char *player)
@@ -55,8 +56,7 @@ int fetch_paladins_player_online_status(CURL *curl, const char *player)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, string_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
 	curl_easy_perform(curl);
-	if (strstr(response, "Offline") != 0) return 0;
-	return 1;
+	return !(strstr(response, "Offline") != 0);
 }
 
 int fetch_paladins_player_in_match_status(CURL *curl, const char *player)
@@ -71,8 +71,7 @@ int fetch_paladins_player_in_match_status(CURL *curl, const char *player)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, string_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, response);
 	curl_easy_perform(curl);
-	if (strstr(response, "\"success\":false") != 0) return 0;
-	return 1;
+	return !(strstr(response, "\"success\":false") != 0);
 
 }
 
