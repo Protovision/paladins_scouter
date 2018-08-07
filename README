@@ -1,0 +1,1 @@
+Checks from a text file a list of paladins players to see if they are offline, in lobby, or in match lobby. Displays the message "Safe to queue" if all players are either offline or in match lobby. 
