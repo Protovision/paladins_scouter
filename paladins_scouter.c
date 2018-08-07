@@ -65,7 +65,7 @@ int fetch_paladins_player_in_match_status(CURL *curl, const char *player)
 	char response[512];
 
 	response[0] = 0;
-	strcpy(url, "http://api.paladins.guru/v2/player/live-match?player=");
+	strcpy(url, "http://api.paladins.guru/v2/player/live-match?region=0&player=");
 	strcat(url, player);
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, string_write);
