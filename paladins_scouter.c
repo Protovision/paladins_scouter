@@ -18,7 +18,7 @@ struct curl_slist *load_player_list(const char *filename)
 	struct curl_slist *players;
 	char line[256];
 
-	f = fopen(filename, "rb");
+	f = fopen(filename, "r");
 	if (f == 0) return 0;
 	players = 0;
 	while (fgets(line, 256, f)) {
