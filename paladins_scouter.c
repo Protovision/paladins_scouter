@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USER_AGENT "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:61.0) Gecko/20100101 Firefox/61.0"
+#define USERAGENT "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:61.0) Gecko/20100101 Firefox/61.0"
 
 enum paladins_player_status {
 	PALADINS_PLAYER_OFFLINE,
@@ -11,25 +11,11 @@ enum paladins_player_status {
 	PALADINS_PLAYER_IN_MATCH	
 };
 
-struct curl_slist *load_player_list(const char *filename)
-{
-	FILE *f;
-	char *p;
-	struct curl_slist *players;
-	char line[256];
-
-	f = fopen(filename, "r");
-	if (f == 0) return 0;
-	players = 0;
-	while (fgets(line, 256, f)) {
-		p = strchr(line, '\n');
-		if (p != 0) *p = 0;
-		if (line[0] == 0) continue;
-		players = curl_slist_append(players, line);
-	}
-	fclose(f);
-	return players;
-}
+const char *paladins_player_status_strings[] = {
+	"Offline",
+	"In Lobby",
+	"In Match"
+};
 
 size_t string_write(char *ptr, 
 			size_t size, 
@@ -95,43 +81,20 @@ enum paladins_player_status fetch_paladins_player_status(CURL *curl,
 int main(int argc, char *argv[])
 {
 	CURL *curl;
-	struct curl_slist *p, *players;
-	int safe;
-	enum paladins_player_status status;
+	char player[256], *p;
 
-	if (argc != 2) {
-		printf("Paladins Player Tracker\n"
-			"Arguments: PLAYERLISTFILE\n");
-		return 0;
-	}
 	curl = curl_easy_init();
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, USER_AGENT);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, USERAGENT);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-	players = load_player_list(argv[1]);
-	if (players == 0) {
-		printf("Failed to load: %s\n", argv[1]);
-		goto exit_main;
+	while (fgets(player, sizeof(player), stdin)) {
+		p = strchr(player, '\n');
+		if (p) *p = 0;
+		if (player[0] == 0) continue;
+		printf("%s: %s\n", player, paladins_player_status_strings[
+					fetch_paladins_player_status(curl, 
+					player)]);
 	}
-	safe = 1;
-	for (p = players; p != 0; p = p->next) {
-		status = fetch_paladins_player_status(curl, p->data);
-		switch (status) {
-		case PALADINS_PLAYER_OFFLINE:
-			printf("%s: Offline\n", p->data);
-			break;
-		case PALADINS_PLAYER_IN_LOBBY:
-			printf("%s: In Lobby\n", p->data);
-			safe = 0;
-			break;
-		case PALADINS_PLAYER_IN_MATCH:
-			printf("%s: In Match Lobby\n", p->data);
-			break;
-		}
-	}
-	printf(safe == 0 ? "\nUnsafe to queue\n" : "\nSafe to queue\n");
-exit_main:
-	curl_slist_free_all(players);
 	curl_easy_cleanup(curl);
 	return 0;
 }
