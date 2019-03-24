@@ -1,1 +1,0 @@
-For each Paladins player name entered, checks if that player is offline, in lobby, or in match lobby. Use standard input redirection from a text file to check the status of multiple players.
